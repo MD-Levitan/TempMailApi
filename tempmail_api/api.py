@@ -1,9 +1,18 @@
 import requests
 import json
 
+from functools import wraps
 from dataclasses import dataclass
 from typing import List, Optional, Any
 from .utils import encrypt
+
+from .models.public import *
+from .models.rpc import *
+from .models.new_mailbox import *
+from .models.user_login import *
+from .models.messages_mailbox import *
+from .models.delete_mailbox import *
+from .models.domains import *
 
 
 def create_seesion(proxy: dict = None, verify: bool = True):
@@ -61,81 +70,68 @@ class API:
 
         return MessagesResponse(json.loads(r.text))
 
-    # "/request/validate_domain/{base64_enc_domain}/format/json"
-    # "/rpc/"
-    # "/request/mail/id/{email}/format/json"
-    # "/request/source/id/{emailId}/format/json"
-    # "/request/one_attachment/id/{mail_id}/{attachment_number}/format/json"
 
-    #         arrayList.add("/request/domains/");
-    #     arrayList.add("/request/mail/id/");
-    #     arrayList.add("/request/source/id/");
-    #     arrayList.add("/request/one_attachment/id/");
-    #     arrayList.add("/request/validate_domain/");"
+def rpc(request_class, response_class):
+    def rpc_decorator(func):
+        @wraps(func)
+        def rpc_wrapper(**kwargs):
+            url = PremiumAPI.URL + "/rpc/"
 
+            print(kwargs)
+            print(request_class(kwargs))
 
-@dataclass
-class Domains:
-    domains: List[str]
+            r = PremiumAPI.SESSION.post(url, data=request_class(kwargs).json())
 
-    def __init__(self, data: list):
-        self.domains = data
+            if r.status_code == 404:
+                raise Exception("response status: 404")
 
+            print(r)
+            print(json.loads(r.text))
 
-@dataclass
-class Id:
-    oid: str = None
+            return response_class(json.loads(r.text))
 
-    def __init__(self, data: dict):
-        self.oid = data["$oid"]
+        return rpc_wrapper
+
+    return rpc_decorator
 
 
-@dataclass
-class Date:
-    numberLong: int = None
+class PremiumAPI:
+    URL = "https://papi2.temp-mail.org"
+    SESSION = create_seesion()
 
-    def __init__(self, data: dict):
-        self.numberLong = data["$numberLong"]
+    @staticmethod
+    def send_rpc(request: JsonRpcRequest):
+        """! Send rpc request. """
+        url = PremiumAPI.URL + "/rpc/"
+        r = PremiumAPI.SESSION.post(url, data=json.dumps(request.json()))
 
+        if r.status_code == 404:
+            raise Exception("response status: 404")
 
-@dataclass
-class CreatedAt:
-    date: Date = None
+        return JsonRpcResponse(json.loads(r.text))
 
-    def __init__(self, data: dict):
-        self.__dict__ = data
-        self.date = None if data.get("$date", None) is None else Date(data["$date"])
+    @rpc(NewMailboxRequest, NewMailboxResponse)
+    @staticmethod
+    def new_mailbox(sid: str, email: str, domain: str):
+        pass
 
+    @rpc(UserLoginRequest, UserLoginResponse)
+    @staticmethod
+    def user_login(username: str, password: str, provider: str = "paddle"):
+        pass
 
-@dataclass
-class Message:
-    _id: Id = None
-    createdAt: CreatedAt = None
-    mail_address_id: str = None
-    mail_attachments_count: int = None
-    mail_from: str = None
-    mail_html: str = None
-    mail_id: str = None
-    mail_preview: str = None
-    mail_subject: str = None
-    #mail_text: NoneType = None
-    mail_text_only: str = None
-    mail_timestamp: float = None
+    @rpc(MailboxMessagesRequest, MailboxMessagesResponse)
+    @staticmethod
+    def mailbox_messages(sid: str, email: str, page: int = 1, limit: str = "10"):
+        pass
 
-    def __init__(self, data: dict):
-        self.__dict__ = data
-        self._id = None if data.get("_id", None) is None else Id(data["_id"])
-        self.createdAt = None if data.get("createdAt", None) is None else CreatedAt(
-            data["createdAt"])
+    @rpc(MailboxDeleteRequest, MailboxDeleteResponse)
+    @staticmethod
+    def mailbox_delete(sid: str, email: str):
+        pass
 
+    @rpc(GetDomainsRequest, GetDomainsResponse)
+    @staticmethod
+    def get_domains():
+        pass
 
-@dataclass
-class MessagesResponse:
-    messages: List[Message] = None
-    error: str = None
-
-    def __init__(self, data):
-        if isinstance(data, dict):
-            self.__dict__ = data
-        if isinstance(data, list):
-            self.messages = list(map(lambda x: Message(x), data))

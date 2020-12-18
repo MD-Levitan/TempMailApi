@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='TempMailApi',
       version='0.1',
@@ -7,7 +7,7 @@ setup(name='TempMailApi',
       author='kusok',
       author_email='ovsyanka@protonmail.com',
       license='MIT',
-      packages=['tempmail_api'],
+      packages=find_packages(),
       classifiers=[
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.5',
