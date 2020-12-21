@@ -13,6 +13,9 @@ from .models.user_login import *
 from .models.messages_mailbox import *
 from .models.delete_mailbox import *
 from .models.domains import *
+from .models.list_mailbox import *
+from .models.listcount_mailbox import *
+from .models.mail_source import *
 
 
 def create_seesion(proxy: dict = None, verify: bool = True):
@@ -77,16 +80,10 @@ def rpc(request_class, response_class):
         def rpc_wrapper(**kwargs):
             url = PremiumAPI.URL + "/rpc/"
 
-            print(kwargs)
-            print(request_class(kwargs))
-
             r = PremiumAPI.SESSION.post(url, data=request_class(kwargs).json())
 
             if r.status_code == 404:
                 raise Exception("response status: 404")
-
-            print(r)
-            print(json.loads(r.text))
 
             return response_class(json.loads(r.text))
 
@@ -135,3 +132,17 @@ class PremiumAPI:
     def get_domains():
         pass
 
+    @rpc(MailboxListRequest, MailboxListResponse)
+    @staticmethod
+    def mailbox_list(sid: str):
+        pass
+    
+    @rpc(MailboxListCountRequest, MailboxListCountResponse)
+    @staticmethod
+    def mailbox_list_count(sid: str):
+        pass
+
+    @rpc(MailSourceRequest, MailSourceResponse)
+    @staticmethod
+    def mail_source(sid: str, mail:str, base64: bool):
+        pass

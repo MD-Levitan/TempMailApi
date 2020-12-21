@@ -7,9 +7,8 @@ from .rpc import JsonRpcMessage, JsonRpcRequest, JsonRpcResponse
 
 
 @dataclass
-class DeleteEmailParams:
+class ListCountParams:
     sid: str = None
-    email: str = None
 
     def __init__(self, data: dict):
         if data is not None:
@@ -17,9 +16,10 @@ class DeleteEmailParams:
 
 
 @dataclass
-class DeleteEmailResult:
+class ListCountResult:
     sid: str = None
-    mailbox: str = None
+    mails: dict = None  # Result {mail: count}
+    ordered_mails: List[str] = None
 
     def __init__(self, data: dict):
         if data is not None:
@@ -27,20 +27,20 @@ class DeleteEmailResult:
 
 
 @dataclass
-class MailboxDeleteRequest(JsonRpcRequest):
-    method: str = "mailbox.delete"
-    params: DeleteEmailParams = None
+class MailboxListCountRequest(JsonRpcRequest):
+    method: str = "mailbox.listv2.msg_count"
+    params: ListCountParams = None
 
-    def __init__(self, params: DeleteEmailParams):
+    def __init__(self, params: ListCountParams):
         super().__init__(None)
-        self.method = "mailbox.delete"
+        self.method = "mailbox.listv2.msg_count"
         self.params = params
 
 
 @dataclass
-class MailboxDeleteResponse(JsonRpcResponse):
-    result: DeleteEmailResult
-     
+class MailboxListCountResponse(JsonRpcResponse):
+    result: ListCountResult
+
     def __init__(self, params: dict):
         super().__init__(params)
-        self.result = DeleteEmailResult(self.result)
+        self.result = ListCountResult(self.result)

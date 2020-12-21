@@ -11,4 +11,5 @@ def encrypt(value: str, xor_value: int = 1573252) -> str:
 
 
 def b64encode(value: str) -> str:
+    """! Encode str to base64 format. """
     return base64.b64decode(value.encode("utf-8")).decode("utf-8") 

@@ -17,15 +17,14 @@ class EmailParams:
             self.__dict__ = data
 
 
-# @dataclass
-# class EmailParamsResponse:
-#     # domain: str = None
-#     email: str = None
-#     sid: str = None
+@dataclass
+class EmailResult:
+    email: str = None
+    sid: str = None
 
-#     def __init__(self, data: dict):
-#         if data is not None:
-#             self.__dict__ = data
+    def __init__(self, data: dict):
+        if data is not None:
+            self.__dict__ = data
 
 
 @dataclass
@@ -41,8 +40,8 @@ class NewMailboxRequest(JsonRpcRequest):
 
 @dataclass
 class NewMailboxResponse(JsonRpcResponse):
-    result: EmailParams #EmailParamsResponse
+    result: EmailResult
 
     def __init__(self, params: dict):
         super().__init__(params)
-        self.result = EmailParams(self.result)
+        self.result = EmailResult(self.result)

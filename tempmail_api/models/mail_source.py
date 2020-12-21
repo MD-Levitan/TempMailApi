@@ -4,12 +4,14 @@ from dataclasses import dataclass
 from typing import List, Optional, Any
 
 from .rpc import JsonRpcMessage, JsonRpcRequest, JsonRpcResponse
+from .messages_mailbox import Mail
 
 
 @dataclass
-class DeleteEmailParams:
+class MailSourceParams:
     sid: str = None
-    email: str = None
+    mail: str = None  # id of mail
+    base64: bool = None
 
     def __init__(self, data: dict):
         if data is not None:
@@ -17,9 +19,9 @@ class DeleteEmailParams:
 
 
 @dataclass
-class DeleteEmailResult:
+class MailSourceResult:
     sid: str = None
-    mailbox: str = None
+    message: Mail = None
 
     def __init__(self, data: dict):
         if data is not None:
@@ -27,20 +29,20 @@ class DeleteEmailResult:
 
 
 @dataclass
-class MailboxDeleteRequest(JsonRpcRequest):
-    method: str = "mailbox.delete"
-    params: DeleteEmailParams = None
+class MailSourceRequest(JsonRpcRequest):
+    method: str = "mail.source"
+    params: MailSourceParams = None
 
-    def __init__(self, params: DeleteEmailParams):
+    def __init__(self, params: MailSourceParams):
         super().__init__(None)
-        self.method = "mailbox.delete"
+        self.method = "mail.source"
         self.params = params
 
 
 @dataclass
-class MailboxDeleteResponse(JsonRpcResponse):
-    result: DeleteEmailResult
+class MailSourceResponse(JsonRpcResponse):
+    result: MailSourceResult
      
     def __init__(self, params: dict):
         super().__init__(params)
-        self.result = DeleteEmailResult(self.result)
+        self.result = MailSourceResult(self.result)

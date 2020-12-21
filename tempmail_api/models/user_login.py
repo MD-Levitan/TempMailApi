@@ -7,7 +7,7 @@ from .rpc import JsonRpcMessage, JsonRpcRequest, JsonRpcResponse
 
 
 @dataclass
-class UserLogin:
+class UserLoginParams:
     username: str = None
     password: str = None
     provider: str = None
@@ -18,7 +18,7 @@ class UserLogin:
 
 
 @dataclass
-class UserLoginR:
+class UserLoginResult:
     sid: str = None
     cancel_url: str = None
     update_url: str = None
@@ -34,9 +34,9 @@ class UserLoginR:
 @dataclass
 class UserLoginRequest(JsonRpcRequest):
     method: str = "user.login"
-    params: UserLogin = None
+    params: UserLoginParams = None
 
-    def __init__(self, params: UserLogin):
+    def __init__(self, params: UserLoginParams):
         super().__init__(None)
         self.method = "user.login"
         self.params = params
@@ -44,8 +44,8 @@ class UserLoginRequest(JsonRpcRequest):
 
 @dataclass
 class UserLoginResponse(JsonRpcResponse):
-    result: UserLoginR  #EmailParamsResponse
+    result: UserLoginResult
 
     def __init__(self, params: dict):
         super().__init__(params)
-        self.result = UserLoginR(self.result)
+        self.result = UserLoginResult(self.result)
