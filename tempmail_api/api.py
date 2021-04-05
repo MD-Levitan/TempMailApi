@@ -18,7 +18,7 @@ from .models.listcount_mailbox import *
 from .models.mail_source import *
 
 
-def create_seesion(proxy: dict = None, verify: bool = True):
+def create_session(proxy: dict = None, verify: bool = True) -> requests.Session:
     session = requests.Session()
 
     if proxy is not None:
@@ -31,10 +31,10 @@ def create_seesion(proxy: dict = None, verify: bool = True):
 
 class API:
     URL = "https://mob1.temp-mail.org"
-    SESSION = create_seesion()
+    SESSION = create_session()
 
     @staticmethod
-    def get_domains():
+    def get_domains(session: requests.Session=None):
         """! Get all valide domains.
         
 
@@ -45,8 +45,10 @@ class API:
         Accept-Encoding: gzip, deflate
         User-Agent: okhttp/3.14.7
         """
+        session_ = session if session is not None else API.SESSION
+
         url = API.URL + "/request/domains/format/json"
-        r = API.SESSION.get(url)
+        r = session_.get(url)
 
         if r.status_code == 404:
             raise Exception("response status: 404")
@@ -54,7 +56,7 @@ class API:
         return Domains(json.loads(r.text))
 
     @staticmethod
-    def get_messages(email: str):
+    def get_messages(email: str, session: requests.Session=None):
         """! Get messages by email.
         
 
@@ -65,6 +67,8 @@ class API:
         Accept: application/json
         Connection: close
         """
+        session_ = session if session is not None else API.SESSION
+
         url = API.URL + "/request/mail/id/{}/format/json".format(encrypt(email))
         r = API.SESSION.get(url)
 
@@ -78,9 +82,15 @@ def rpc(request_class, response_class):
     def rpc_decorator(func):
         @wraps(func)
         def rpc_wrapper(**kwargs):
+            if "session" in kwargs:
+                session = kwargs.pop("session")
+            else:
+                session = PremiumAPI.SESSION
+
             url = PremiumAPI.URL + "/rpc/"
 
-            r = PremiumAPI.SESSION.post(url, data=request_class(kwargs).json())
+            print(session.proxies)
+            r = session.post(url, data=request_class(kwargs).json())
 
             if r.status_code == 404:
                 raise Exception("response status: 404")
@@ -94,10 +104,10 @@ def rpc(request_class, response_class):
 
 class PremiumAPI:
     URL = "https://papi2.temp-mail.org"
-    SESSION = create_seesion()
+    SESSION = create_session()
 
     @staticmethod
-    def send_rpc(request: JsonRpcRequest):
+    def send_rpc(request: JsonRpcRequest, session: requests.Session=None):
         """! Send rpc request. """
         url = PremiumAPI.URL + "/rpc/"
         r = PremiumAPI.SESSION.post(url, data=json.dumps(request.json()))
