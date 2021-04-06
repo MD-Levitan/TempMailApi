@@ -70,7 +70,7 @@ class API:
         session_ = session if session is not None else API.SESSION
 
         url = API.URL + "/request/mail/id/{}/format/json".format(encrypt(email))
-        r = API.SESSION.get(url)
+        r = session_.get(url)
 
         if r.status_code == 404:
             raise Exception("response status: 404")
@@ -89,7 +89,6 @@ def rpc(request_class, response_class):
 
             url = PremiumAPI.URL + "/rpc/"
 
-            print(session.proxies)
             r = session.post(url, data=request_class(kwargs).json())
 
             if r.status_code == 404:
